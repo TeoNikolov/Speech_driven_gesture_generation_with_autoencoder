@@ -8,8 +8,7 @@ but these paths can be changed with the parameters below.
 import argparse
 
 parser = argparse.ArgumentParser(
-    description="""Parameters for data processing for the paper `Gesticulator: 
-                   A framework for semantically-aware speech-driven gesture generation""")
+    description="""Parameters for data processing for the GENEA Challenge 2022 Audio-Driven Baseline""")
 
 # Folders params
 parser.add_argument('--raw_data_dir', '-data_raw', default="../dataset/raw/",
@@ -29,5 +28,5 @@ parser.add_argument('--feature_type', '-feat', default="MFCC",
                             (can be \'Spectro\', \'MFCC\', \'Pros\', \'MFCC+Pros\' or \'Spectro+Pos\')''')
 parser.add_argument('--n_input', '-n_in', default=26, type=int,
                     help='Number of inputs to the model')
-parser.add_argument('--n_output', '-n_out', default=45, type=int,
+parser.add_argument('--n_output', '-n_out', default=498, type=int,
                     help='number of outputs of the model')
