@@ -3,7 +3,7 @@
 
 ![ImageOfIdea](visuals/SpeechReprMotion.png?raw=true "Idea")
 
-This branch contains the implementation of the IVA '19 paper [Analyzing Input and Output Representations for Speech-Driven Gesture Generation](https://dl.acm.org/doi/abs/10.1145/3308532.3329472) for [GENEA Challenge 2020](https://genea-workshop.github.io/2020/#gesture-generation-challenge).
+This branch contains the implementation of the IVA '19 paper [Analyzing Input and Output Representations for Speech-Driven Gesture Generation](https://dl.acm.org/doi/abs/10.1145/3308532.3329472) for [GENEA Challenge 2022](https://genea-workshop.github.io/2022/challenge).
 
 ## Requirements
 
@@ -38,11 +38,11 @@ Whenever a parameter is written in caps (such as DATA_DIR), it has to be specifi
 
 - Clone this repository
 ```
-git clone git@github.com:GestureGeneration/Speech_driven_gesture_generation_with_autoencoder.git
+git clone git@github.com:genea-workshop/Speech_driven_gesture_generation_with_autoencoder.git
 ```
-- Switch branch to 'GENEA_2020'
+- Switch branch to 'GENEA_2022'
 ```
-git checkout GENEA_2020
+git checkout GENEA_2022
 ```
 - Download a dataset from KTH Box using the link you obtained after singing the license agreement
 
@@ -82,7 +82,7 @@ More information can be found in the folder `motion_repr_learning`
 ## 4. Learn speech-driven gesture generation model
 
 ```sh
-python train.py MODEL_NAME EPOCHS DATA_DIR N_INPUT ENCODE DIM
+python train.py MODEL_NAME.hdf5 EPOCHS DATA_DIR N_INPUT ENCODE DIM
 # MODEL_NAME = file name for the model
 # EPOCHS = how many epochs do we want to train the model (recommended - 500)
 # DATA_DIR = directory with the data (should be same as before)
@@ -94,7 +94,7 @@ python train.py MODEL_NAME EPOCHS DATA_DIR N_INPUT ENCODE DIM
 ## 5. Predict gesture
 
 ```sh
-python predict.py MODEL_NAME.hdf5 INPUT_SPEECH_FILE OUTPUT_GESTURE_FILE
+python predict.py MODEL_NAME.hdf5 INPUT_SPEECH_FILE.npy OUTPUT_GESTURE_FILE.npy
 ```
 
 ```sh
@@ -104,7 +104,7 @@ python predict.py model.hdf5 data/test_inputs/X_test_NaturalTalking_04.npy data/
 
 The predicted gestures have to be decoded with `decode.py`, which reuses the config from step 3.
 ```sh
-python motion_repr_learning/ae/decode.py -input_file INPUT_FILE -output_file OUTPUT_FILE --layer1_width DIM --batch_size=8 
+python motion_repr_learning/ae/decode.py -input_file INPUT_FILE.npy -output_file OUTPUT_FILE.npy --layer1_width DIM --batch_size=8 
 ```
 
 Convert the motion from exponential maps to euler angles and write into BVH file
@@ -132,4 +132,4 @@ If you use this code in your research please cite the paper:
 ```
 
 ## Contact
-If you encounter any problems/bugs/issues please contact me on Github or by emailing me at tarask@kth.se for any bug reports/questions/suggestions. I prefer questions and bug reports on Github as that provides visibility to others who might be encountering same issues or who have the same questions.
+If you encounter any problems/bugs/issues please contact use Github for any bug reports/questions/suggestions. I prefer questions and bug reports on Github as that provides visibility to others who might be encountering same issues or who have the same questions.
