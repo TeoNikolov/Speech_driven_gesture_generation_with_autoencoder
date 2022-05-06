@@ -14,13 +14,14 @@ from os import path
 # Params
 from data_params import parser
 
-# Indices for train/dev/test split
-DEV_LAST_ID = 2
-TEST_LAST_ID = 2
+# Indices for train/dev split
+DEV_LAST_ID = 7
 TRAIN_LAST_ID = 24
 
-audio_prefix = "Recording_0"
-motion_prefix = "Recording_0"
+audio_prefix = "Recording_"
+motion_prefix = "Recording_"
+
+
 
 def copy_files(ind, raw_d_dir, processed_d_dir, data_split, suffix=""):
     # Copy audio
@@ -48,28 +49,23 @@ def create_dataset_splits(raw_d_dir, processed_d_dir):
     for i in range(1, DEV_LAST_ID):
         copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "dev")
 
-    # prepare test data
-    for i in range(DEV_LAST_ID, TEST_LAST_ID):
-        copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "test")
-
     # prepare training data
-    for i in range(TEST_LAST_ID, TRAIN_LAST_ID):
+    for i in range(DEV_LAST_ID, TRAIN_LAST_ID):
         copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "train")
         copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "train", "_2")
 
     extracted_dir = path.join(processed_d_dir)
 
-    dev_files, train_files, test_files = _format_datasets(extracted_dir)
+    dev_files, train_files = _format_datasets(extracted_dir)
 
     # Save the filenames of each datapoints (the preprocessing script will use these)
     dev_files.to_csv(path.join(extracted_dir, "dev-dataset-info.csv"), index=False)
     train_files.to_csv(path.join(extracted_dir, "train-dataset-info.csv"), index=False)
-    test_files.to_csv(path.join(extracted_dir, "test-dataset-info.csv"), index=False)
 
 
 def _create_data_directories(processed_d_dir):
     """Create subdirectories for the dataset splits."""
-    dir_names = ["dev", "test", "train"]
+    dir_names = ["dev" "train"]
     sub_dir_names = ["inputs", "labels"]
     os.makedirs(processed_d_dir, exist_ok = True)
     
@@ -88,11 +84,10 @@ def _create_data_directories(processed_d_dir):
 def _format_datasets(extracted_dir):
     print("The datasets will contain the following indices:", end='')
     dev_files = _files_to_pandas_dataframe(extracted_dir, "dev", range(1, DEV_LAST_ID))
-    test_files = _files_to_pandas_dataframe(extracted_dir, "test", range(DEV_LAST_ID, TEST_LAST_ID))
-    train_files = _files_to_pandas_dataframe(extracted_dir, "train", range(TEST_LAST_ID, TRAIN_LAST_ID))
+    train_files = _files_to_pandas_dataframe(extracted_dir, "train", range(DEV_LAST_ID, TRAIN_LAST_ID))
     print()
 
-    return dev_files, train_files, test_files
+    return dev_files, train_files
 
 
 def _files_to_pandas_dataframe(extracted_dir, set_name, idx_range):
