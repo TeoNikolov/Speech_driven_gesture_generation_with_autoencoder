@@ -15,8 +15,8 @@ from os import path
 from data_params import parser
 
 # Indices for train/dev split
-DEV_LAST_ID = 7
-TRAIN_LAST_ID = 24
+DEV_LAST_ID = 3
+TRAIN_LAST_ID = 6
 
 audio_prefix = "Recording_"
 motion_prefix = "Recording_"
@@ -47,12 +47,12 @@ def create_dataset_splits(raw_d_dir, processed_d_dir):
 
     # prepare dev data
     for i in range(1, DEV_LAST_ID):
-        copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "dev")
+        copy_files(str(i).zfill(1), raw_d_dir, processed_d_dir, "dev")
 
     # prepare training data
     for i in range(DEV_LAST_ID, TRAIN_LAST_ID):
-        copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "train")
-        copy_files(str(i).zfill(2), raw_d_dir, processed_d_dir, "train", "_2")
+        copy_files(str(i).zfill(1), raw_d_dir, processed_d_dir, "train")
+        copy_files(str(i).zfill(1), raw_d_dir, processed_d_dir, "train", "_2")
 
     extracted_dir = path.join(processed_d_dir)
 
@@ -65,7 +65,7 @@ def create_dataset_splits(raw_d_dir, processed_d_dir):
 
 def _create_data_directories(processed_d_dir):
     """Create subdirectories for the dataset splits."""
-    dir_names = ["dev" "train"]
+    dir_names = ["dev", "train"]
     sub_dir_names = ["inputs", "labels"]
     os.makedirs(processed_d_dir, exist_ok = True)
     
@@ -97,8 +97,8 @@ def _files_to_pandas_dataframe(extracted_dir, set_name, idx_range):
     files = []
     for idx in idx_range:
         # original files
-        input_file = path.abspath(path.join(extracted_dir, set_name, "inputs", audio_prefix + str(idx).zfill(2) + ".wav"))
-        label_file = path.abspath(path.join(extracted_dir, set_name, "labels", motion_prefix + str(idx).zfill(2) + ".npz"))
+        input_file = path.abspath(path.join(extracted_dir, set_name, "inputs", audio_prefix + str(idx).zfill(1) + ".wav"))
+        label_file = path.abspath(path.join(extracted_dir, set_name, "labels", motion_prefix + str(idx).zfill(1) + ".npz"))
         if os.path.isfile(input_file):
             files.append((input_file, label_file))
 
@@ -132,7 +132,7 @@ def check_dataset_directories(raw_data_dir):
 if __name__ == "__main__":
     args = parser.parse_args()
     
-    check_dataset_directories(args.raw_data_dir) 
+    check_dataset_directories(args.raw_data_dir)
     create_dataset_splits(args.raw_data_dir, args.proc_data_dir)
     
     print(f"\nFinished!")

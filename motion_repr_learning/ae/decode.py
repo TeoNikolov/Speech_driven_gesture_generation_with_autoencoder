@@ -44,7 +44,7 @@ if __name__ == '__main__':
     nn = create_nn(Y_train_normalized, Y_dev_normalized, max_val, mean_pose)
 
     # Read the encoding
-    encoding = np.loadtxt(args.input_file)
+    encoding = np.load(args.input_file)
 
     print(encoding.shape)
 

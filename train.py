@@ -34,14 +34,14 @@ if ENCODED:
     else:    
         N_OUTPUT = int(sys.argv[6])  # Representation dimensionality
 else:
-    N_OUTPUT = 45  # Number of Gesture Features
+    N_OUTPUT = 498  # Number of Gesture Features
 
 
 EPOCHS = int(sys.argv[2])
 DATA_DIR = sys.argv[3]
 N_INPUT = int(sys.argv[4])  # Number of input features
 
-BATCH_SIZE = 256
+BATCH_SIZE = 64
 N_HIDDEN = 150
 
 N_CONTEXT = 60 + 1  # The number of frames in the context

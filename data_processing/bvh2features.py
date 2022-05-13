@@ -35,11 +35,11 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
 
     data_pipe = Pipeline([
        ('dwnsampl', DownSampler(tgt_fps=fps,  keep_all=False)),
-       ('root', RootTransformer('hip_centric')),
        ('mir', Mirror(axis='X', append=True)),
        ('exp', MocapParameterizer('expmap')),
        ('np', Numpyfier())
     ])
+
 
     out_data = data_pipe.fit_transform(data_all)
     

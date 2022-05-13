@@ -25,7 +25,7 @@ def predict(model_name, input_file, output_file):
     predicted = np.array(model.predict(audio))
 
     print("Encoding shape is: ", predicted.shape)
-    np.savetxt(output_file, predicted)
+    np.save(output_file, predicted)
 
 
 if __name__ == "__main__":

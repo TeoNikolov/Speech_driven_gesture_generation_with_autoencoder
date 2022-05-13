@@ -20,17 +20,17 @@ import joblib as jl
 
 def feat2bvh(feat_file, bvh_file):
 
-    features = np.load(feat_file)
+    features = np.load(feat_file, allow_pickle=True)#['clips']
     print("Original features shape: ", features.shape)
 
     # shorten sequence length for visualization
-    features = features[:1200]
+    features = features[3600:7200]
     print("Shortened features shape: ", features.shape)
 
     # transform the data back to it's original shape
     # note: in a real scenario this is usually done with predicted data   
     # note: some transformations (such as transforming to joint positions) are not inversible
-    bvh_data=pipeline.inverse_transform([features])
+    bvh_data = pipeline.inverse_transform([features])
 
     # Test to write some of it to file for visualization in blender or motion builder
     writer = BVHWriter()
