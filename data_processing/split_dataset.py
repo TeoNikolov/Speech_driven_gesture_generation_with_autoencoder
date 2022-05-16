@@ -15,18 +15,16 @@ from os import path
 from data_params import parser
 
 # Indices for train/dev split
-DEV_LAST_ID = 3
-TRAIN_LAST_ID = 6
+DEV_LAST_ID = 33
+TRAIN_LAST_ID = 152
 
-audio_prefix = "Recording_"
-motion_prefix = "Recording_"
-
+audio_prefix = motion_prefix = "trn_2022_"
 
 
 def copy_files(ind, raw_d_dir, processed_d_dir, data_split, suffix=""):
     # Copy audio
     filename = f"{audio_prefix}{ind}{suffix}.wav"
-    original_file_path = path.join(raw_d_dir, "Audio", filename)
+    original_file_path = path.join(raw_d_dir, "wav", filename)
 
 
     if os.path.isfile(original_file_path):
@@ -34,8 +32,8 @@ def copy_files(ind, raw_d_dir, processed_d_dir, data_split, suffix=""):
         shutil.copy(original_file_path, target_file_path)
 
     # Copy gestures
-    filename = f"{motion_prefix}{ind}{suffix}.npz"
-    original_file_path = path.join(raw_d_dir, "Motion", filename)
+    filename = f"{motion_prefix}{ind}.npz"
+    original_file_path = path.join(raw_d_dir, "bvh", filename)
     
     if os.path.isfile(original_file_path):
         target_file_path = path.join(processed_d_dir, data_split, "labels", filename)
@@ -47,12 +45,12 @@ def create_dataset_splits(raw_d_dir, processed_d_dir):
 
     # prepare dev data
     for i in range(1, DEV_LAST_ID):
-        copy_files(str(i).zfill(1), raw_d_dir, processed_d_dir, "dev")
+        copy_files(str(i).zfill(3), raw_d_dir, processed_d_dir, "dev")
 
     # prepare training data
     for i in range(DEV_LAST_ID, TRAIN_LAST_ID):
-        copy_files(str(i).zfill(1), raw_d_dir, processed_d_dir, "train")
-        copy_files(str(i).zfill(1), raw_d_dir, processed_d_dir, "train", "_2")
+        copy_files(str(i).zfill(3), raw_d_dir, processed_d_dir, "train")
+        copy_files(str(i).zfill(3), raw_d_dir, processed_d_dir, "train", "_2")
 
     extracted_dir = path.join(processed_d_dir)
 
@@ -97,8 +95,8 @@ def _files_to_pandas_dataframe(extracted_dir, set_name, idx_range):
     files = []
     for idx in idx_range:
         # original files
-        input_file = path.abspath(path.join(extracted_dir, set_name, "inputs", audio_prefix + str(idx).zfill(1) + ".wav"))
-        label_file = path.abspath(path.join(extracted_dir, set_name, "labels", motion_prefix + str(idx).zfill(1) + ".npz"))
+        input_file = path.abspath(path.join(extracted_dir, set_name, "inputs", audio_prefix + str(idx).zfill(3) + ".wav"))
+        label_file = path.abspath(path.join(extracted_dir, set_name, "labels", motion_prefix + str(idx).zfill(3) + ".npz"))
         if os.path.isfile(input_file):
             files.append((input_file, label_file))
 
@@ -119,8 +117,8 @@ def check_dataset_directories(raw_data_dir):
         print("Please, provide the correct path to the dataset in the `-raw_data_dir` argument.")
         exit(-1)
 
-    speech_dir     = path.join(raw_data_dir, "Audio")
-    motion_dir     = path.join(raw_data_dir, "Motion")
+    speech_dir     = path.join(raw_data_dir, "wav")
+    motion_dir     = path.join(raw_data_dir, "bvh")
 
     for sub_dir in [speech_dir, motion_dir]:
         if not path.isdir(sub_dir):

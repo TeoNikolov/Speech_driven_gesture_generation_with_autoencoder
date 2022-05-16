@@ -37,6 +37,7 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
        ('dwnsampl', DownSampler(tgt_fps=fps,  keep_all=False)),
        ('mir', Mirror(axis='X', append=True)),
        ('exp', MocapParameterizer('expmap')),
+       ('root', RootTransformer('hip_centric')),
        ('np', Numpyfier())
     ])
 
@@ -52,8 +53,8 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
     for f in files:
         ff = os.path.join(dest_dir, f)
         print(ff)
-        np.savez(ff + ".npz", clips=out_data[fi])
-        np.savez(ff + "_mirrored.npz", clips=out_data[len(files)+fi])
+        np.savez(ff[:-4] + ".npz", clips=out_data[fi])
+        np.savez(ff[:-4] + "_mirrored.npz", clips=out_data[len(files)+fi])
         fi=fi+1
 
 

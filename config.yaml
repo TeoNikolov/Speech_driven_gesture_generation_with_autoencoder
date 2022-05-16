@@ -10,7 +10,7 @@ seed: 123456
 delta_for_early_stopping: 0.5
 
 # ---- Network architecture ----
-frame_size: 498
+frame_size: 501
 num_hidden_layers: 1
 middle_layer: 1
 
@@ -21,13 +21,12 @@ layer3_width: 36
 # ---- Training parameters ----
 chunk_length: 1
 dropout_keep_prob: 0.9
-noise_variance: 0.01
-training_epochs: 20
+noise_variance: 0.02
+training_epochs: 80
 pretraining_epochs: 5
 batch_size: 128
 lr: 0.0001
 pretraining_lr: 0.001
-
 
 
 # Weight decay is disabled by default.               

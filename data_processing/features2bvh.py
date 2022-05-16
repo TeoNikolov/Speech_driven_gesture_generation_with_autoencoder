@@ -20,11 +20,11 @@ import joblib as jl
 
 def feat2bvh(feat_file, bvh_file):
 
-    features = np.load(feat_file, allow_pickle=True)#['clips']
+    features = np.load(feat_file, allow_pickle=True) #['clips']
     print("Original features shape: ", features.shape)
 
     # shorten sequence length for visualization
-    features = features[3600:7200]
+    features = features[:3000]
     print("Shortened features shape: ", features.shape)
 
     # transform the data back to it's original shape
