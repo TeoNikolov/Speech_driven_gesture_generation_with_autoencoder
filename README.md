@@ -44,10 +44,10 @@ git clone git@github.com:genea-workshop/Speech_driven_gesture_generation_with_au
 ```
 git checkout GENEA_2022
 ```
-- Download a dataset from KTH Box using the link you obtained after singing the license agreement
+- Download a dataset from OneDrive using the link you obtained in our email
 
 ## 2. Pre-process the data
-By default, the model expects the dataset in the `<repository>/dataset/raw` folder, and the processed dataset will be available in the `<repository>/dataset/processed folder`. If your dataset is elsewhere, please provide the correct paths with the `--raw_data_dir` and `--proc_data_dir` command line arguments. You can also use '--help' argument to see more details about the scripts.
+**Important**: By default, the model expects the dataset in the `<repository>/dataset/raw` folder, and the processed dataset will be available in the `<repository>/dataset/processed folder`. If your dataset is elsewhere, please provide the correct paths with the `--raw_data_dir` and `--proc_data_dir` command line arguments. You can also use '--help' argument to see more details about the scripts.
 
 ```
 cd data_processing
@@ -66,16 +66,16 @@ cd ..
 
 As a result of running this script, the dataset is created in `--proc_data_dir`:
 - the training dataset files `X_train.npy`, `Y_train.npy` and the validation dataset files `X_dev.npy`, `Y_dev.npy`are binary numpy files
-- the audio inputs for testing (such as `X_test_NaturalTalking_04.npy`) are under the `/test_inputs/` subfolder
+- the audio inputs for testing (such as `X_dev_trn_2022_031.npy`) are under the `/dev_inputs/` subfolder
 
-There rest of the folders in `--proc_data_dir` (e.g. `/dev_inputs/` or `/train/`) can be ignored (they are a side effect of the preprocessing script).
+There rest of the folders in `--proc_data_dir` (e.g. `/train_inputs/` or `/train/`) can be ignored (they are a side effect of the preprocessing script).
 
 ## 3. Learn motion representation by AutoEncoder and encode the training and validation datasets
 ```python
-python motion_repr_learning/ae/learn_ae_n_encode_dataset.py --layer1_width DIM
+python motion_repr_learning/ae/learn_ae_n_encode_dataset.py --layer1_width DIM --data_dir DATA_DIR -training_epochs EPOCHS 
 ```
 There are several parameters that can be modified in the `config.yaml` file or through the command line, see `config.py` for details.
-The optimal dimensionality (DIM) in our experiment was 40. 
+The dimensionality (DIM) in our experiment was 128. 
 
 More information can be found in the folder `motion_repr_learning` 
 
@@ -88,34 +88,34 @@ python train.py MODEL_NAME.hdf5 EPOCHS DATA_DIR N_INPUT ENCODE DIM
 # DATA_DIR = directory with the data (should be same as before)
 # N_INPUT = how many dimension does speech data have (default - 26)
 # ENCODE = True (because we use AutoEncoder)
-# DIM = how many dimension does encoding have (should be the same as above, recommended - 40)
+# DIM = how many dimension does encoding have (should be the same as above)
 ```
 
 ## 5. Predict gesture
 
 ```sh
-python predict.py MODEL_NAME.hdf5 INPUT_SPEECH_FILE.npy OUTPUT_GESTURE_FILE.npy
+python predict.py MODEL_NAME.hdf5 INPUT_SPEECH_FILE.npy OUTPUT_GESTURE_ENC_FILE.npy
 ```
 
 ```sh
 # Usage example
-python predict.py model.hdf5 data/test_inputs/X_test_NaturalTalking_04.npy data/test_inputs/predict_04_20fps.npy
+python predict.py model.hdf5 data/dev_inputs/X_dev_trn_2022_031.npy predict_31_30fps_enc.npy
 ```
 
 The predicted gestures have to be decoded with `decode.py`, which reuses the config from step 3.
 ```sh
-python motion_repr_learning/ae/decode.py -input_file INPUT_FILE.npy -output_file OUTPUT_FILE.npy --layer1_width DIM --batch_size=8 
+python motion_repr_learning/ae/decode.py -input_file OUTPUT_GESTURE_ENC_FILE.npy -output_file OUTPUT_GESTURE_DEC_FILE.npy --layer1_width DIM --batch_size=8 
 ```
 
 Convert the motion from exponential maps to euler angles and write into BVH file
 ```sh
 cd data_processind
-python features2bvh.py
+python features2bvh.py -feat OUTPUT_GESTURE_DEC_FILE -bvh MOTION_FILE
 ```
 
 
 ## 6. Qualitative evaluation
-Use animation server which is provided at the GENEA Challenge Github page to visualize your gestures from BVH format.
+Use animation server which is provided at the [GENEA Challenge Github page](https://github.com/genea-workshop/genea_challenge_2022) to visualize your gestures from BVH format.
 
 &nbsp;
 
