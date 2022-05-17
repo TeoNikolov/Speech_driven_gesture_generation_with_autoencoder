@@ -42,7 +42,8 @@ DATA_DIR = sys.argv[3]
 N_INPUT = int(sys.argv[4])  # Number of input features
 
 BATCH_SIZE = 64
-N_HIDDEN = 150
+N_ENC = 64
+N_HIDDEN = 256
 
 N_CONTEXT = 60 + 1  # The number of frames in the context
 
@@ -83,7 +84,7 @@ def train(model_file):
     # Define Keras model
 
     model = Sequential()
-    model.add(TimeDistributed(Dense(N_HIDDEN), input_shape=(N_CONTEXT, N_INPUT)))
+    model.add(TimeDistributed(Dense(N_ENC), input_shape=(N_CONTEXT, N_INPUT)))
     model.add(BatchNormalization())
     model.add(Activation('relu'))
     model.add(Dropout(0.1))
