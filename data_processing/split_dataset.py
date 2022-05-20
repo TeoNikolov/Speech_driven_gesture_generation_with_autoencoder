@@ -15,10 +15,10 @@ from os import path
 from data_params import parser
 
 # Indices for train/dev split
-DEV_LAST_ID = 33
-TRAIN_LAST_ID = 152
+DEV_LAST_ID = 15
+TRAIN_LAST_ID = 300
 
-audio_prefix = motion_prefix = "trn_2022_"
+audio_prefix = motion_prefix = "trn_2022_v0_"
 
 
 def copy_files(ind, raw_d_dir, processed_d_dir, data_split, suffix=""):

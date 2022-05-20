@@ -28,5 +28,5 @@ parser.add_argument('--feature_type', '-feat', default="MFCC",
                             (can be \'Spectro\', \'MFCC\', \'Pros\', \'MFCC+Pros\' or \'Spectro+Pos\')''')
 parser.add_argument('--n_input', '-n_in', default=26, type=int,
                     help='Number of inputs to the model')
-parser.add_argument('--n_output', '-n_out', default=501, type=int,
+parser.add_argument('--n_output', '-n_out', default=498, type=int,
                     help='number of outputs of the model')

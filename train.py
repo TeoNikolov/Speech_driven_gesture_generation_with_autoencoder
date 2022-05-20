@@ -41,7 +41,7 @@ EPOCHS = int(sys.argv[2])
 DATA_DIR = sys.argv[3]
 N_INPUT = int(sys.argv[4])  # Number of input features
 
-BATCH_SIZE = 64
+BATCH_SIZE = 1024
 N_ENC = 64
 N_HIDDEN = 256
 

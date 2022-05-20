@@ -285,8 +285,6 @@ if __name__ == "__main__":
         print("Please provide the correct folder to the dataset in the '-proc_data_dir' argument.")
         exit(-1)
 
-    create_dataset('train', args, save_in_separate_files=True)
-
     print("Creating dev sequences")
     create_dataset('dev', args, save_in_separate_files=True)
 

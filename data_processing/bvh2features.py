@@ -34,10 +34,10 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
         data_all.append(p.parse(ff))
 
     data_pipe = Pipeline([
-       ('dwnsampl', DownSampler(tgt_fps=fps,  keep_all=False)),
-       ('mir', Mirror(axis='X', append=True)),
+       #('dwnsampl', DownSampler(tgt_fps=fps,  keep_all=False)),
+       #('mir', Mirror(axis='X', append=True)),
        ('exp', MocapParameterizer('expmap')),
-       ('root', RootTransformer('hip_centric')),
+       #('root', RootTransformer('hip_centric')),
        ('np', Numpyfier())
     ])
 
@@ -45,7 +45,7 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
     out_data = data_pipe.fit_transform(data_all)
     
     # the datapipe will append the mirrored files to the end
-    assert len(out_data) == 2*len(files)
+    assert len(out_data) == len(files)
     
     jl.dump(data_pipe, os.path.join(pipeline_dir + 'data_pipe.sav'))
         
@@ -54,7 +54,7 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
         ff = os.path.join(dest_dir, f)
         print(ff)
         np.savez(ff[:-4] + ".npz", clips=out_data[fi])
-        np.savez(ff[:-4] + "_mirrored.npz", clips=out_data[len(files)+fi])
+        #np.savez(ff[:-4] + "_mirrored.npz", clips=out_data[len(files)+fi])
         fi=fi+1
 
 
