@@ -74,8 +74,14 @@ def learning(data, data_info, just_restore=False):
         learning_rate = args.lr
         batch_size = args.batch_size
 
-        hidden_shapes = [args.layer1_width
-                         for j in range(num_hidden)]
+        if num_hidden == 1:
+            hidden_shapes = [args.layer1_width]
+        elif num_hidden == 2:
+            hidden_shapes = [args.layer1_width, args.layer2_width]
+        elif num_hidden == 3:
+            hidden_shapes = [args.layer1_width, args.layer2_width, args.layer3_width]
+        else:
+            raise(num_hidden, " hidden layers is currently not implemented")
 
         # Check if the flags makes sence
         if dropout < 0 or variance < 0:
@@ -97,7 +103,7 @@ def learning(data, data_info, just_restore=False):
         shape = [args.frame_size * args.chunk_length] + hidden_shapes + [
             args.frame_size * args.chunk_length]
         nn = DAE(shape, sess, variance, data_info)
-        print('\nDAE with the following shape was created : ', shape)
+        print('\nDAE with the following shape was created : ', shape, "\n")
 
         # Initialize input_producer
         sess.run(tf.local_variables_initializer())

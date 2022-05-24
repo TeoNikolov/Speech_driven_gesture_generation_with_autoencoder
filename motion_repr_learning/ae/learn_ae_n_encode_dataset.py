@@ -70,8 +70,13 @@ if __name__ == '__main__':
     nn = create_nn(train_normalized_data, dev_normalized_data, max_val, mean_pose)
 
     """       Create save directory for the encoded data         """
-    
-    save_dir = os.path.join(args.data_dir, str(args.layer1_width))
+
+    if args.middle_layer == 1:
+        save_dir = os.path.join(args.data_dir, str(args.layer1_width))
+    elif args.middle_layer == 2:
+        save_dir = os.path.join(args.data_dir, str(args.layer2_width))
+    else:
+        raise("\nMiddle layer is more than 2! change args.middle_layer value\n")
     
     if not os.path.isdir(save_dir):
         print(f"Created directory {os.path.abspath(save_dir)} for saving the encoded data.")
@@ -81,6 +86,7 @@ if __name__ == '__main__':
     """                  Encode the train data                   """
     # Encode it
     encoded_train_data = autoencoder_training.encode(nn, train_normalized_data)
+    print("\nEncoded train set shape: ", encoded_train_data.shape)
     # And save into file
     np.save(os.path.join(save_dir, "Y_train_encoded.npy"), encoded_train_data)
 
