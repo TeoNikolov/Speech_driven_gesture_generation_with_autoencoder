@@ -10,13 +10,13 @@ seed: 123456
 delta_for_early_stopping: 0.5
 
 # ---- Network architecture ----
-frame_size: 498
+frame_size: 300
 num_hidden_layers: 3
 middle_layer: 2
 
-layer1_width: 128
+layer1_width: 100
 layer2_width: 32
-layer3_width: 128
+layer3_width: 100
 
 # ---- Training parameters ----
 chunk_length: 1

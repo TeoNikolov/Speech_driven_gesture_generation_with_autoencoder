@@ -18,7 +18,7 @@ from data_params import parser
 DEV_LAST_ID = 15
 TRAIN_LAST_ID = 300
 
-audio_prefix = motion_prefix = "trn_2022_v0_"
+audio_prefix = motion_prefix = "trn_2022_v1_"
 
 
 def copy_files(ind, raw_d_dir, processed_d_dir, data_split, suffix=""):
