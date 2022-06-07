@@ -5,6 +5,7 @@ By Omid Alemi
 Created on June 12, 2017
 
 Modified by Simon Alexanderson, 2020-06-24
+Modified by Youngwoo Yoon, 2022-06-01
 '''
 import copy
 import pandas as pd
@@ -106,7 +107,7 @@ class MocapParameterizer(BaseEstimator, TransformerMixin):
             
             tree_data = {}
 
-            for joint in track.traverse():
+            for joint in joints:
                 parent = track.skeleton[joint]['parent']
                 rot_order = track.skeleton[joint]['order']
 
@@ -121,23 +122,23 @@ class MocapParameterizer(BaseEstimator, TransformerMixin):
                     euler_values = [[0,0,0] for f in rc.iterrows()]
                     rot_order = "XYZ"
                 else:
-                    euler_values = [[f[1]['%s_%srotation'%(joint, rot_order[0])], 
-                                     f[1]['%s_%srotation'%(joint, rot_order[1])], 
+                    euler_values = [[f[1]['%s_%srotation'%(joint, rot_order[0])],
+                                     f[1]['%s_%srotation'%(joint, rot_order[1])],
                                      f[1]['%s_%srotation'%(joint, rot_order[2])]] for f in rc.iterrows()]
 
                 if pc.shape[1] < 3:
                     pos_values = [[0,0,0] for f in pc.iterrows()]
                 else:
-                    pos_values =[[f[1]['%s_Xposition'%joint], 
-                                  f[1]['%s_Yposition'%joint], 
+                    pos_values =[[f[1]['%s_Xposition'%joint],
+                                  f[1]['%s_Yposition'%joint],
                                   f[1]['%s_Zposition'%joint]] for f in pc.iterrows()]
-                
+
                 # Convert the eulers to rotation matrices
-                rotmats = R.from_euler(rot_order, euler_values, degrees=True).inv()                  
+                rotmats = R.from_euler(rot_order, euler_values, degrees=True).inv()
                 tree_data[joint]=[
                                     [], # to store the rotation matrix
                                     []  # to store the calculated position
-                                 ] 
+                                 ]
 
                 if track.root_name == joint:
                     tree_data[joint][0] = rotmats
@@ -191,12 +192,12 @@ class MocapParameterizer(BaseEstimator, TransformerMixin):
                 r1_col = '%s_%srotation'%(joint, rot_order[0])
                 r2_col = '%s_%srotation'%(joint, rot_order[1])
                 r3_col = '%s_%srotation'%(joint, rot_order[2])
-                
+
                 exp_df.drop([r1_col, r2_col, r3_col], axis=1, inplace=True)
                 euler = [[f[1][r1_col], f[1][r2_col], f[1][r3_col]] for f in r.iterrows()]
                 exps = np.array(self.fix_rotvec(R.from_euler(rot_order.lower(), euler, degrees=True).as_rotvec()))
 
-                # Create the corresponding columns in the new DataFrame    
+                # Create the corresponding columns in the new DataFrame
                 exp_df.insert(loc=0, column='%s_gamma'%joint, value=pd.Series(data=[e[2] for e in exps], index=exp_df.index))
                 exp_df.insert(loc=0, column='%s_beta'%joint, value=pd.Series(data=[e[1] for e in exps], index=exp_df.index))
                 exp_df.insert(loc=0, column='%s_alpha'%joint, value=pd.Series(data=[e[0] for e in exps], index=exp_df.index))
@@ -217,7 +218,7 @@ class MocapParameterizer(BaseEstimator, TransformerMixin):
 
             # Create a new DataFrame to store the exponential map rep
             euler_df = exp_df.copy()
-            
+
             # List the columns that contain rotation channels
             exp_params = [c for c in exp_df.columns if ( any(p in c for p in ['alpha', 'beta','gamma']) and 'Nub' not in c)]
 
@@ -226,13 +227,13 @@ class MocapParameterizer(BaseEstimator, TransformerMixin):
 
             for joint in joints:
                 r = exp_df[[c for c in exp_params if joint in c]] # Get the columns that belong to this joint
-                
+
                 euler_df.drop(['%s_alpha'%joint, '%s_beta'%joint, '%s_gamma'%joint], axis=1, inplace=True)
                 expmap = [[f[1]['%s_alpha'%joint], f[1]['%s_beta'%joint], f[1]['%s_gamma'%joint]] for f in r.iterrows()] # Make sure the columsn are organized in xyz order
                 rot_order = track.skeleton[joint]['order']
                 euler_rots = np.array(R.from_rotvec(expmap).as_euler(rot_order.lower(), degrees=True))
-                
-                # Create the corresponding columns in the new DataFrame    
+
+                # Create the corresponding columns in the new DataFrame
                 euler_df['%s_%srotation'%(joint, rot_order[0])] = pd.Series(data=[e[0] for e in euler_rots], index=euler_df.index)
                 euler_df['%s_%srotation'%(joint, rot_order[1])] = pd.Series(data=[e[1] for e in euler_rots], index=euler_df.index)
                 euler_df['%s_%srotation'%(joint, rot_order[2])] = pd.Series(data=[e[2] for e in euler_rots], index=euler_df.index)
@@ -246,27 +247,27 @@ class MocapParameterizer(BaseEstimator, TransformerMixin):
 class Mirror(BaseEstimator, TransformerMixin):
     def __init__(self, axis="X", append=True):
         """
-        Mirrors the data 
+        Mirrors the data
         """
         self.axis = axis
         self.append = append
-        
-    
+
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X, y=None):
         print("Mirror: " + self.axis)
         Q = []
-        
+
         if self.append:
             for track in X:
                 Q.append(track)
-            
+
         for track in X:
             channels = []
             titles = []
-            
+
             if self.axis == "X":
                 signs = np.array([1,-1,-1])
             if self.axis == "Y":
@@ -286,30 +287,28 @@ class Mirror(BaseEstimator, TransformerMixin):
             new_df[rxp] = pd.Series(data=-signs[0]*euler_df[rxp], index=new_df.index)
             new_df[ryp] = pd.Series(data=-signs[1]*euler_df[ryp], index=new_df.index)
             new_df[rzp] = pd.Series(data=-signs[2]*euler_df[rzp], index=new_df.index)
-            
+
             # List the columns that contain rotation channels
             rots = [c for c in euler_df.columns if ('rotation' in c and 'Nub' not in c)]
-            #lft_rots = [c for c in euler_df.columns if ('Left' in c and 'rotation' in c and 'Nub' not in c)]
-            #rgt_rots = [c for c in euler_df.columns if ('Right' in c and 'rotation' in c and 'Nub' not in c)]
-            lft_joints = (joint for joint in track.skeleton if 'Left' in joint and 'Nub' not in joint)
-            rgt_joints = (joint for joint in track.skeleton if 'Right' in joint and 'Nub' not in joint)
-                        
+            lft_joints = (joint for joint in track.skeleton if '_l_' in joint and 'Nub' not in joint)
+            rgt_joints = (joint for joint in track.skeleton if '_r_' in joint and 'Nub' not in joint)
+
             new_track = track.clone()
 
-            for lft_joint in lft_joints:                
-                rgt_joint = lft_joint.replace('Left', 'Right')
-                
-                # Create the corresponding columns in the new DataFrame                
+            for lft_joint in lft_joints:
+                rgt_joint = lft_joint.replace('_l_', '_r_')
+
+                # Create the corresponding columns in the new DataFrame
                 new_df['%s_Xrotation'%lft_joint] = pd.Series(data=signs[0]*track.values['%s_Xrotation'%rgt_joint], index=new_df.index)
                 new_df['%s_Yrotation'%lft_joint] = pd.Series(data=signs[1]*track.values['%s_Yrotation'%rgt_joint], index=new_df.index)
                 new_df['%s_Zrotation'%lft_joint] = pd.Series(data=signs[2]*track.values['%s_Zrotation'%rgt_joint], index=new_df.index)
-                
+
                 new_df['%s_Xrotation'%rgt_joint] = pd.Series(data=signs[0]*track.values['%s_Xrotation'%lft_joint], index=new_df.index)
                 new_df['%s_Yrotation'%rgt_joint] = pd.Series(data=signs[1]*track.values['%s_Yrotation'%lft_joint], index=new_df.index)
                 new_df['%s_Zrotation'%rgt_joint] = pd.Series(data=signs[2]*track.values['%s_Zrotation'%lft_joint], index=new_df.index)
-    
+
             # List the joints that are not left or right, i.e. are on the trunk
-            joints = (joint for joint in track.skeleton if 'Nub' not in joint and 'Left' not in joint and 'Right' not in joint)
+            joints = (joint for joint in track.skeleton if 'Nub' not in joint and '_l_' not in joint and '_r_' not in joint)
 
             for joint in joints:
                 # Create the corresponding columns in the new DataFrame
@@ -339,12 +338,12 @@ class JointSelector(BaseEstimator, TransformerMixin):
 
         if self.include_root:
             selected_joints.append(X[0].root_name)
-        
+
         selected_joints.extend(self.joints)
 
         for joint_name in selected_joints:
-            selected_channels.extend([o for o in X[0].values.columns if (joint_name + "_") in o and 'Nub' not in o])
-        
+            selected_channels.extend([o for o in X[0].values.columns if ((joint_name + "_X") in o or (joint_name + "_Y") in o or (joint_name + "_Z") in o) and 'Nub' not in o and 'Null' not in o])
+
         self.selected_joints = selected_joints
         self.selected_channels = selected_channels
         self.not_selected = X[0].values.columns.difference(selected_channels)
@@ -359,17 +358,17 @@ class JointSelector(BaseEstimator, TransformerMixin):
 
         for track in X:
             t2 = track.clone()
-            
+
             for key in track.skeleton.keys():
                 if key not in self.selected_joints:
                     t2.skeleton.pop(key)
             t2.values = track.values[self.selected_channels]
 
             Q.append(t2)
-      
+
 
         return Q
-    
+
     def inverse_transform(self, X, copy=None):
         Q = []
 
@@ -400,33 +399,33 @@ class Numpyfier(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         print("Numpyfier")
         Q = []
-        
+
         for track in X:
             Q.append(track.values.values)
             #print("Numpyfier:" + str(track.values.columns))
-            
+
         return np.array(Q)
 
     def inverse_transform(self, X, copy=None):
         Q = []
 
         for track in X:
-            
+
             new_mocap = self.org_mocap_.clone()
             time_index = pd.to_timedelta([f for f in range(track.shape[0])], unit='s')
 
             new_df =  pd.DataFrame(data=track, index=time_index, columns=self.org_mocap_.values.columns)
-            
+
             new_mocap.values = new_df
-            
+
 
             Q.append(new_mocap)
 
         return Q
-    
+
 class Slicer(BaseEstimator, TransformerMixin):
     '''
-    Slice the data into intervals of equal size 
+    Slice the data into intervals of equal size
     '''
     def __init__(self, window_size, overlap=0.5):
         self.window_size = window_size
@@ -442,14 +441,14 @@ class Slicer(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         print("Slicer")
         Q = []
-        
+
         for track in X:
             vals = track.values.values
             nframes = vals.shape[0]
             overlap_frames = (int)(self.overlap*self.window_size)
-            
+
             n_sequences = (nframes-overlap_frames)//(self.window_size-overlap_frames)
-            
+
             if n_sequences>0:
                 y = np.zeros((n_sequences, self.window_size, vals.shape[1]))
 
@@ -464,14 +463,14 @@ class Slicer(BaseEstimator, TransformerMixin):
         Q = []
 
         for track in X:
-            
+
             new_mocap = self.org_mocap_.clone()
             time_index = pd.to_timedelta([f for f in range(track.shape[0])], unit='s')
 
             new_df =  pd.DataFrame(data=track, index=time_index, columns=self.org_mocap_.values.columns)
-            
+
             new_mocap.values = new_df
-            
+
 
             Q.append(new_mocap)
 
@@ -487,10 +486,10 @@ class RootTransformer(BaseEstimator, TransformerMixin):
         self.method = method
         self.position_smoothing=position_smoothing
         self.rotation_smoothing=rotation_smoothing
-    
+
     def fit(self, X, y=None):
         return self
-    
+
     def transform(self, X, y=None):
         print("RootTransformer")
         Q = []
@@ -505,13 +504,13 @@ class RootTransformer(BaseEstimator, TransformerMixin):
 
                 dxpcol = '%s_dXposition'%track.root_name
                 dzpcol = '%s_dZposition'%track.root_name
-                
+
                 x=track.values[xpcol].copy()
                 z=track.values[zpcol].copy()
-                
+
                 if self.position_smoothing>0:
-                    x_sm = filters.gaussian_filter1d(x, self.position_smoothing, axis=0, mode='nearest')    
-                    z_sm = filters.gaussian_filter1d(z, self.position_smoothing, axis=0, mode='nearest')                    
+                    x_sm = filters.gaussian_filter1d(x, self.position_smoothing, axis=0, mode='nearest')
+                    z_sm = filters.gaussian_filter1d(z, self.position_smoothing, axis=0, mode='nearest')
                     dx = pd.Series(data=x_sm, index=new_df.index).diff()
                     dz = pd.Series(data=z_sm, index=new_df.index).diff()
                     new_df[xpcol] = x-x_sm
@@ -520,17 +519,17 @@ class RootTransformer(BaseEstimator, TransformerMixin):
                     dx = x.diff()
                     dz = z.diff()
                     new_df.drop([xpcol, zpcol], axis=1, inplace=True)
-                    
+
                 dx[0] = dx[1]
                 dz[0] = dz[1]
-                
+
                 new_df[dxpcol] = dx
                 new_df[dzpcol] = dz
-                
+
                 new_track = track.clone()
                 new_track.values = new_df
             # end of abdolute_translation_deltas
-            
+
             elif self.method == 'hip_centric':
                 new_track = track.clone()
 
@@ -542,7 +541,7 @@ class RootTransformer(BaseEstimator, TransformerMixin):
                 xr_col = '%s_Xrotation'%track.root_name
                 yr_col = '%s_Yrotation'%track.root_name
                 zr_col = '%s_Zrotation'%track.root_name
-                
+
                 new_df = track.values.copy()
 
                 all_zeros = np.zeros(track.values[xp_col].values.shape)
@@ -599,7 +598,7 @@ class RootTransformer(BaseEstimator, TransformerMixin):
                 # recz = [recz[i]+dz[i+1] for i in range(dz.shape[0]-1)]
                 # recx = dx[:-1] + dx[1:]
                 # recz = dz[:-1] + dz[1:]
-                if self.position_smoothing > 0:                    
+                if self.position_smoothing > 0:
                     new_df[xpcol] = pd.Series(data=new_df[xpcol]+recx, index=new_df.index)
                     new_df[zpcol] = pd.Series(data=new_df[zpcol]+recz, index=new_df.index)
                 else:
@@ -607,13 +606,71 @@ class RootTransformer(BaseEstimator, TransformerMixin):
                     new_df[zpcol] = pd.Series(data=recz, index=new_df.index)
 
                 new_df.drop([dxpcol, dzpcol], axis=1, inplace=True)
-                
+
                 new_track.values = new_df
             # end of abdolute_translation_deltas
-            
+
             Q.append(new_track)
 
         return Q
+
+
+class RootNormalizer(BaseEstimator, TransformerMixin):
+    """
+    Make subjects in TalkingWithHands16.2M face the same direction
+    This class is not for general uses. Only compatible to GENEA 2022 challenge dataset
+    Added by Youngwoo Yoon, April 2022
+    """
+    def __init__(self):
+        pass
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X, y=None):
+        print("RootNormalizer")
+        Q = []
+
+        for track in X:
+            new_track = track.clone()
+
+            xp_col = '%s_Xposition'%track.root_name
+            yp_col = '%s_Yposition'%track.root_name
+            zp_col = '%s_Zposition'%track.root_name
+
+            xr_col = '%s_Xrotation'%track.root_name
+            yr_col = '%s_Yrotation'%track.root_name
+            zr_col = '%s_Zrotation'%track.root_name
+
+            new_df = track.values.copy()
+
+            all_zeros = np.zeros(track.values[xp_col].values.shape)
+            mean_xp = np.mean(track.values[xp_col].values)
+            mean_yp = np.mean(track.values[yp_col].values)
+            mean_zp = np.mean(track.values[zp_col].values)
+
+            if track.values[xp_col].values[0] < 0:
+                new_yr = np.full(track.values[xp_col].values.shape, -90)
+            else:
+                new_yr = np.full(track.values[xp_col].values.shape, 90)
+
+            new_df[xp_col] = pd.Series(data=track.values[xp_col]-mean_xp, index=new_df.index)
+            new_df[yp_col] = pd.Series(data=track.values[yp_col]-mean_yp, index=new_df.index)
+            new_df[zp_col] = pd.Series(data=track.values[zp_col]-mean_zp, index=new_df.index)
+
+            new_df[xr_col] = pd.Series(data=all_zeros, index=new_df.index)
+            new_df[yr_col] = pd.Series(data=new_yr, index=new_df.index)
+            new_df[zr_col] = pd.Series(data=all_zeros, index=new_df.index)
+
+            new_track.values = new_df
+
+            Q.append(new_track)
+
+        return Q
+
+    def inverse_transform(self, X, copy=None):
+        # NOT IMPLEMENTED
+        return X
 
 
 class RootCentricPositionNormalizer(BaseEstimator, TransformerMixin):
