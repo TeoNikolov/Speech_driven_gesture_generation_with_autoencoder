@@ -32,6 +32,11 @@ def feat2bvh(feat_file, bvh_file):
     # note: some transformations (such as transforming to joint positions) are not inversible
     bvh_data = pipeline.inverse_transform([features])
 
+    # ensure correct body orientation
+    bvh_data[0].values["body_world_Xrotation"] = 0
+    bvh_data[0].values["body_world_Yrotation"] = 0
+    bvh_data[0].values["body_world_Zrotation"] = 0
+
     # Test to write some of it to file for visualization in blender or motion builder
     writer = BVHWriter()
     with open(bvh_file,'w') as f:
