@@ -148,7 +148,7 @@ def create_dataset(dataset_name, args, save_in_separate_files):
     
     if save_in_separate_files:
         save_dir = path.join(args.proc_data_dir, f'{dataset_name}_inputs') # e.g. dataset/processed/dev_inputs/
-        
+
         if not os.path.isdir(save_dir):
             os.makedirs(save_dir)
 
@@ -167,7 +167,7 @@ def _save_data_as_sequences(data_csv, save_dir, dataset_name, args):
                                            mode=dataset_name, 
                                            args=args, augment_with_context=True)
 
-        filename    = data_csv['wav_filename'][i].split("/")[-1]
+        filename    = data_csv['wav_filename'][i].split("/")[-1].split("\\")[-1]
         filename    = filename.split(".")[0] # strip the extension from the filename
         
         x_save_path = path.join(save_dir, f'X_{dataset_name}_{filename}.npy')
