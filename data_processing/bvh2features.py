@@ -60,7 +60,7 @@ def extract_joint_angles(bvh_dir, files, dest_dir, pipeline_dir, fps):
     # the datapipe will append the mirrored files to the end
     assert len(out_data) == len(files)
     
-    jl.dump(data_pipe, os.path.join(pipeline_dir + 'data_pipe.sav'))
+    jl.dump(data_pipe, os.path.join(pipeline_dir, 'data_pipe.sav'))
         
     fi=0
     for f in files:
@@ -76,11 +76,11 @@ if __name__ == '__main__':
 
     # Setup parameter parser
     parser = ArgumentParser(add_help=False)
-    parser.add_argument('--bvh_dir', '-orig', required=True,
+    parser.add_argument('--bvh_dir', '-orig', required=True, type=os.path.abspath,
                                    help="Path where original motion files (in BVH format) are stored")
-    parser.add_argument('--dest_dir', '-dest', required=True,
+    parser.add_argument('--dest_dir', '-dest', required=True, type=os.path.abspath,
                                    help="Path where extracted motion features will be stored")
-    parser.add_argument('--pipeline_dir', '-pipe', default="./utils/",
+    parser.add_argument('--pipeline_dir', '-pipe', default="./utils/", type=os.path.abspath,
                         help="Path where the motion data processing pipeline will be stored")
 
     params = parser.parse_args()
