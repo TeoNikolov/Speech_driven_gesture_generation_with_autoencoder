@@ -56,13 +56,13 @@ FEAT2BVH_SCRIPT = os.path.join(WORK_DIR, "data_processing", "features2bvh.py")
 
 def train_ae(script_loc, dataset_dir, model_dir, checkpoint_dir, summary_dir, dim, epochs):
 	if not os.path.exists(model_dir):
-		os.mkdir(model_dir)
+		os.makedirs(model_dir)
 		os.mkdir(checkpoint_dir)
 		os.mkdir(summary_dir)
-	subprocess.run(f'python {script_loc} --data_dir "{os.path.join(dataset_dir, "processed")}" --chkpt_dir "{checkpoint_dir}" --summary_dir "{summary_dir}" --layer2_width {dim} --training_epochs {epochs}')
+	subprocess.run(f'python {script_loc} --data_dir "{os.path.join(dataset_dir, "processed")}" --chkpt_dir "{checkpoint_dir}" --summary_dir "{summary_dir}" --layer2_width {dim} --training_epochs {epochs}', shell=True)
 
 def train_gg(script_loc, dataset_dir, model_file, epochs, ae_dim, hidden_dim, save_period):
-	subprocess.run(f'python {script_loc} {model_file} {epochs} {os.path.join(dataset_dir, "processed")} 26 True {ae_dim} -period {save_period} -dim {hidden_dim}')
+	subprocess.run(f'python {script_loc} {model_file} {epochs} {os.path.join(dataset_dir, "processed")} 26 True {ae_dim} -period {save_period} -dim {hidden_dim}', shell=True)
 
 def predict(tmplt):
 	if not tmplt["overwrite"] and os.path.exists(tmplt["file_out"]):
@@ -75,19 +75,19 @@ def predict(tmplt):
 	shutil.copyfile(tmplt["file_in"], os.path.join(os.path.dirname(tmplt["file_out"]), os.path.basename(tmplt["file_in"])))
 
 	os.chdir('data_processing')
-	subprocess.run(f'python {tmplt["encode_script"]} -i {tmplt["file_in"]} -o {f_encoded}')
+	subprocess.run(f'python {tmplt["encode_script"]} -i {tmplt["file_in"]} -o {f_encoded}', shell=True)
 	os.chdir('..')
 
 	# python predict.py test-model-name.hdf5 dataset\processed\dev_inputs\X_dev_trn_2022_v1_001.npy output\X_dev_trn_2022_v1_001_out_encoded.npy
-	subprocess.run(f'python {tmplt["predict_script"]} {tmplt["gg_filename"]} {f_encoded} {f_out_encoded}')
+	subprocess.run(f'python {tmplt["predict_script"]} {tmplt["gg_filename"]} {f_encoded} {f_out_encoded}', shell=True)
 
 	# python motion_repr_learning/ae/decode.py -input_file output\X_dev_trn_2022_v1_001_out_encoded.npy -output_file output\X_dev_trn_2022_v1_001_out_decoded.npy --layer1_width 128 --batch_size=8
 	data_dir = os.path.join(tmplt["dataset_dir"], 'processed')
-	subprocess.run(f'python {tmplt["decode_script"]} -input_file {f_out_encoded} -output_file {f_out_decoded} --data_dir {data_dir} --chkpt_dir {tmplt["ae_chkpt_dir"]} --summary_dir {tmplt["ae_smmry_dir"]} --layer2_width {tmplt["ae_dim"]} --batch_size=8')
+	subprocess.run(f'python {tmplt["decode_script"]} -input_file {f_out_encoded} -output_file {f_out_decoded} --data_dir {data_dir} --chkpt_dir {tmplt["ae_chkpt_dir"]} --summary_dir {tmplt["ae_smmry_dir"]} --layer2_width {tmplt["ae_dim"]} --batch_size=8', shell=True)
 
 	# python features2bvh.py -feat ..\output\X_dev_trn_2022_v1_001_out_decoded.npy -bvh ..\output\X_dev_trn_2022_v1_001_out_decoded.bvh
 	os.chdir('data_processing')
-	subprocess.run(f'python {tmplt["feat2bvh_script"]} -feat {f_out_decoded} -bvh {tmplt["file_out"]} -pipe {tmplt["dataset_dir"] + "/"}')
+	subprocess.run(f'python {tmplt["feat2bvh_script"]} -feat {f_out_decoded} -bvh {tmplt["file_out"]} -pipe {tmplt["dataset_dir"] + "/"}', shell=True)
 	os.chdir('..')
 	
 if args.train_ae:
