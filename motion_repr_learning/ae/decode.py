@@ -17,9 +17,9 @@ import sys
 from scipy.signal import savgol_filter
 
 
-def smoothing(motion):
+def smoothing(motion, window_length, poly_order):
 
-    smoothed = [savgol_filter(motion[:,i], 13, 3) for i in range(motion.shape[1])]
+    smoothed = [savgol_filter(motion[:,i], window_length, poly_order) for i in range(motion.shape[1])]
 
     new_motion = np.array(smoothed).transpose()
 
@@ -52,7 +52,9 @@ if __name__ == '__main__':
     decoding = tr.decode(nn, encoding)
 
     # Smoothing
-    decoding = smoothing(decoding)
+    if args.smoothing_mode == 1:
+        print(f"Smoothing using Savitzky–Golay digital filter with window length {args.savgol_window_length} and poly order {args.savgol_poly_order}...")
+        decoding = smoothing(decoding, args.savgol_window_length, args.savgol_poly_order)
 
     print(decoding.shape)
 

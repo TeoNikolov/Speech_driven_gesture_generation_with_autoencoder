@@ -9,18 +9,32 @@ WORK_DIR = os.path.join(SCRIPT_DIR, "..")
 os.chdir(WORK_DIR)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset", help="The path to the dataset folder.", required=True)
-parser.add_argument("--predict_in", help="The filename of a .wav file to predict a gesture for. Used only with -pred flag.")
-parser.add_argument("--predict_out", help="The filename of the output .bvh file that was predicted. Used only with -pred flag.")
-parser.add_argument("--train_ae", "-ae", help="Train the autoencoder.", action='store_true')
-parser.add_argument("--train_gg", "-gg", help="Train the gesture generation model.", action='store_true')
-parser.add_argument("--predict", "-pred", help="Make predictions for all files in dataset folder.", action='store_true')
-parser.add_argument("--ae_dim", "-adim", help="The autoencoder latent dimension.", default=8, type=int)
-parser.add_argument("--ae_epochs", "-aeps", help="Train the autoencoder for this many epochs.", default=5, type=int)
-parser.add_argument("--gg_dim", "-gdim", help="The gesture generation model middle layer dimension.", default=8, type=int)
-parser.add_argument("--gg_epochs", "-geps", help="Train the gesture generation model for this many epochs.", default=5, type=int)
-parser.add_argument("--gg_period", "-period", help="Save the gesture generation model after every X epochs.", default=2, type=int)
-parser.add_argument("--gg_name", "-gname", help="The name of the model. It is generally identifiable by the directory it is in.", default="gg_model.hdf5", type=str)
+
+# General params
+parser.add_argument("--dataset",				required=True,				help="The path to the dataset folder.")
+parser.add_argument("--train_ae", "-ae", 		action='store_true',		help="Train the autoencoder.")
+parser.add_argument("--train_gg", "-gg", 		action='store_true',		help="Train the gesture generation model.")
+parser.add_argument("--predict", "-pred", 		action='store_true',		help="Make predictions for all files in dataset folder.")
+
+# Autoencoder params
+parser.add_argument("--ae_dim", "-adim", 		type=int, 	default=8,		help="The autoencoder latent dimension.")
+parser.add_argument("--ae_epochs", "-aeps", 	type=int,	default=5,		help="Train the autoencoder for this many epochs.")
+
+# Gesture generation params
+parser.add_argument("--gg_dim", "-gdim", 		type=int,	default=8,		help="The gesture generation model middle layer dimension.")
+parser.add_argument("--gg_epochs", "-geps", 	type=int,	default=5,		help="Train the gesture generation model for this many epochs.")
+parser.add_argument("--gg_period", "-period", 	type=int,	default=2, 		help="Save the gesture generation model after every X epochs.")
+parser.add_argument("--gg_name", "-gname", 		type=str,	default="gg_model.hdf5", help="The name of the model. It is generally identifiable by the directory it is in.")
+
+# Predict parameters
+parser.add_argument("--predict_in", 										help="The filename of a .wav file to predict a gesture for. Used only with -pred flag.")
+parser.add_argument("--predict_out", 										help="The filename of the output .bvh file that was predicted. Used only with -pred flag.")
+
+# Post-processing parameters
+parser.add_argument('--smoothing_mode', 		type=int, 	default=1,		help='How to apply smoothing to the produced gesture motion. (0) no smoothing; (1) Savitzky–Golay')
+parser.add_argument('--savgol_window_length', 	type=int, 	default=13, 	help='If "--smoothing_mode = 1", specifies the window length (number of adjacent data samples) used by the Savitzky–Golay filter. Must be an odd number.')
+parser.add_argument('--savgol_poly_order', 		type=int, 	default=3, 		help='If "--smoothing_mode = 1", specifies the polynomial order of the polynomial being fitted to the data by the Savitzky–Golay filter.')
+
 args = parser.parse_args()
 
 # short arg validation
@@ -28,6 +42,13 @@ if args.predict and not args.predict_in:
 	raise ValueError("You requested to make predictions, but failed to provide an input .wav filename.")
 if args.predict and not args.predict_out:
 	raise ValueError("You requested to make predictions, but failed to provide an output .bvh filename.")
+if args.smoothing_mode == 1:
+	if args.savgol_window_length % 2 == 0:
+		raise ValueError("The parameter '--savgol_window_length' must be an odd number!")
+	if args.savgol_window_length < 3:
+		raise ValueError("The parameter '--savgol_window_length' must be at least 3!")
+	if args.savgol_poly_order >= args.savgol_window_length:
+		raise ValueError("The parameter '--savgol_poly_order' must be less than '--savgol_window_length'!")
 
 # Dataset
 DATASET_NAME = os.path.basename(args.dataset)
@@ -83,7 +104,7 @@ def predict(tmplt):
 
 	# python motion_repr_learning/ae/decode.py -input_file output\X_dev_trn_2022_v1_001_out_encoded.npy -output_file output\X_dev_trn_2022_v1_001_out_decoded.npy --layer1_width 128 --batch_size=8
 	data_dir = os.path.join(tmplt["dataset_dir"], 'processed')
-	subprocess.run(f'python {tmplt["decode_script"]} -input_file {f_out_encoded} -output_file {f_out_decoded} --data_dir {data_dir} --chkpt_dir {tmplt["ae_chkpt_dir"]} --summary_dir {tmplt["ae_smmry_dir"]} --layer2_width {tmplt["ae_dim"]} --batch_size=8', shell=True)
+	subprocess.run(f'python {tmplt["decode_script"]} -input_file {f_out_encoded} -output_file {f_out_decoded} --data_dir {data_dir} --chkpt_dir {tmplt["ae_chkpt_dir"]} --summary_dir {tmplt["ae_smmry_dir"]} --layer2_width {tmplt["ae_dim"]} --batch_size=8 --smoothing_mode {tmplt["smoothing_mode"]} --savgol_window_length {tmplt["savgol_window_length"]} --savgol_poly_order {tmplt["savgol_poly_order"]}', shell=True)
 
 	# python features2bvh.py -feat ..\output\X_dev_trn_2022_v1_001_out_decoded.npy -bvh ..\output\X_dev_trn_2022_v1_001_out_decoded.bvh
 	os.chdir('data_processing')
@@ -110,7 +131,10 @@ predict_template = {
 	'ae_chkpt_dir': AE_CHKPT_DIR,
 	'ae_smmry_dir': AE_SMMRY_DIR,
 	'ae_dim': AE_DIM,
-	'overwrite': False
+	'overwrite': False,
+	'smoothing_mode': args.smoothing_mode,
+	'savgol_window_length': args.savgol_window_length,
+	'savgol_poly_order': args.savgol_poly_order
 }
 
 if args.predict:

@@ -28,6 +28,10 @@ batch_size: 128
 lr: 0.0001
 pretraining_lr: 0.001
 
+# ---- Post-processing parameters ----
+smoothing_mode: 1
+savgol_window_length: 13
+savgol_poly_order: 3
 
 # Weight decay is disabled by default.               
 # You can enable it by setting its multiplier below: 

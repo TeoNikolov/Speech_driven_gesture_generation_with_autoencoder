@@ -56,13 +56,18 @@ def construct_config_parser():
     parser.add('--pretraining_epochs', type=int,   help='Number of pretraining epochs')
     parser.add('--batch_size',         type=int,   help='Batch size')
     parser.add('--lr',                 type=float, help='Learning rate for training')
-    parser.add('--pretraining_lr',     type=float, help='Learning rate for pretraining')
-    
+    parser.add('--pretraining_lr',     type=float, help='Learning rate for pretraining')	
+	
     parser.add('--delta_for_early_stopping', type=float,
                help='Controls the sensitivity of early stopping.' + \
                     'A delta of 0.05 means that the training is stopped when' + \
                     'the loss is 5 percent worse than the best loss so far.')
     
+    # ----- Post-processing parameters ----
+    parser.add('--smoothing_mode', 			type=int, 				help='How to apply smoothing to the produced gesture motion. (0) no smoothing; (1) Savitzky–Golay')
+    parser.add('--savgol_window_length', 	type=int, 				help='If "--smoothing_mode = 1", specifies the window length (number of adjacent data samples) used by the Savitzky–Golay filter. Must be an odd number.')
+    parser.add('--savgol_poly_order', 		type=int, 				help='If "--smoothing_mode = 1", specifies the polynomial order of the polynomial being fitted to the data by the Savitzky–Golay filter.')
+	
     return parser
 
 # Any file that imports this module will have access to this global variable.
