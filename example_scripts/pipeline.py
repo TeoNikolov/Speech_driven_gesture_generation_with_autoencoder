@@ -4,14 +4,17 @@ import argparse
 import shutil
 
 # General
-SCRIPT_DIR = os.getcwd()
+SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 WORK_DIR = os.path.join(SCRIPT_DIR, "..")
+WORK_DIR_ORIGINAL = os.getcwd()
 os.chdir(WORK_DIR)
 
+# Argument parsing
 parser = argparse.ArgumentParser()
 
 # General params
 parser.add_argument("--dataset",				required=True,				help="The path to the dataset folder.")
+parser.add_argument("--model_dir", "-mdir", 								help="Directory where pre-trained models are saved to and loaded from.", default=os.path.join(WORK_DIR, "models"))
 parser.add_argument("--train_ae", "-ae", 		action='store_true',		help="Train the autoencoder.")
 parser.add_argument("--train_gg", "-gg", 		action='store_true',		help="Train the gesture generation model.")
 parser.add_argument("--predict", "-pred", 		action='store_true',		help="Make predictions for all files in dataset folder.")
@@ -60,14 +63,14 @@ PREDICT_OUT = args.predict_out
 AE_EPOCHS = args.ae_epochs
 AE_DIM = args.ae_dim
 AE_TRAIN_SCRIPT = os.path.join(WORK_DIR, "motion_repr_learning", "ae", "learn_ae_n_encode_dataset.py")
-AE_MODEL_DIR = os.path.join(WORK_DIR, "models", f"ae_{DATASET_NAME}_{AE_DIM}")
+AE_MODEL_DIR = os.path.join(args.model_dir, f"ae_{DATASET_NAME}_{AE_DIM}")
 AE_CHKPT_DIR = os.path.join(AE_MODEL_DIR, "checkpoints")
 AE_SMMRY_DIR = os.path.join(AE_MODEL_DIR, "summaries")
 
 GG_EPOCHS = args.gg_epochs
 GG_HIDDEN_DIM = args.gg_dim
 GG_PERIOD = args.gg_period
-GG_FILENAME = os.path.join(WORK_DIR, "models", f"gg_{DATASET_NAME}_{AE_DIM}_{GG_HIDDEN_DIM}", args.gg_name)
+GG_FILENAME = os.path.join(args.model_dir, f"gg_{DATASET_NAME}_{AE_DIM}_{GG_HIDDEN_DIM}", args.gg_name)
 GG_TRAIN_SCRIPT = os.path.join(WORK_DIR, "train.py")
 
 ENCODE_SCRIPT = os.path.join(WORK_DIR, "data_processing", "encode_audio.py")
@@ -141,3 +144,5 @@ if args.predict:
 	if not os.path.exists(os.path.dirname(PREDICT_OUT)):
 		os.makedirs(os.path.dirname(PREDICT_OUT))
 	predict(predict_template)
+	
+os.chdir(WORK_DIR_ORIGINAL)
