@@ -11,13 +11,14 @@ import sys
 sys.path.append('.')
 import numpy as np
 import os
+import pickle
 
 import train as autoencoder_training
 from utils.utils import prepare_motion_data, DataSet, DataSets
 
 from config import args
 
-def create_nn(train_data, dev_data, max_val, mean_pose):
+def create_nn(train_data, dev_data, max_val, mean_pose, just_inference=False):
     """
     Train or restore a neural network
     Args:
@@ -29,19 +30,29 @@ def create_nn(train_data, dev_data, max_val, mean_pose):
      nn: neural network, which is ready to use
     """
 
-    # Create DataSet object
+    if just_inference:
+        data = None
+        # read data info from a file
+        with open('utils/data_info.pkl', 'rb') as inp:
+            data_info = pickle.load(inp)
+    else:
+        # Create DataSet object
+        data = DataSets()
 
-    data = DataSets()
+        # set dataset params
+        data.train = DataSet(train_data, args.batch_size)
+        data.test = DataSet(dev_data, args.batch_size)
 
-    data.train = DataSet(train_data, args.batch_size)
-    data.test = DataSet(dev_data, args.batch_size)
+        # Assign variance
+        data.train.sigma = np.std(train_data, axis=(0, 1))
 
-    # Assign variance
-    data.train.sigma = np.std(train_data, axis=(0, 1))
+        # Create information about the dataset
+        data_info = autoencoder_training.DataInfo(data.train.sigma, data.train._sequences.shape,
+                                data.test._sequences.shape, max_val, mean_pose)
 
-    # Create information about the dataset
-    data_info = autoencoder_training.DataInfo(data.train.sigma, data.train._sequences.shape,
-                            data.test._sequences.shape, max_val, mean_pose)
+        # save info into a file
+        with open('utils/data_info.pkl', 'wb') as outp:
+            pickle.dump(data_info, outp, pickle.HIGHEST_PROTOCOL)
 
     # Train the network
     nn = autoencoder_training.learning(data, data_info, just_restore=args.load_model_from_checkpoint)

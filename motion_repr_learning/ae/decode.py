@@ -37,11 +37,8 @@ if __name__ == '__main__':
     args.pretrain_network = False
     args.load_model_from_checkpoint = True
 
-    # Get the data
-    Y_train_normalized, Y_train, Y_dev_normalized, max_val, mean_pose  = prepare_motion_data(args.data_dir)
-
     # Train the network
-    nn = create_nn(Y_train_normalized, Y_dev_normalized, max_val, mean_pose)
+    nn = create_nn(None, None, None, None, just_inference=True)
 
     # Read the encoding
     encoding = np.load(args.input_file)

@@ -112,6 +112,20 @@ def learning(data, data_info, just_restore=False):
 
         with tf.variable_scope("Train"):
 
+            # Create a saver
+            saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
+            chkpt_file = abspath(join(args.chkpt_dir, 'chkpt-final'))
+
+            # restore model, if needed
+            if args.load_model_from_checkpoint:
+                print("Restoring the model from from the file " + str(chkpt_file) + '.')
+                saver.restore(sess, chkpt_file)
+                print("Model restored.")
+
+            if just_restore:
+                #coord.request_stop()
+                return nn
+
             ##############        DEFINE  Optimizer and training OPERATOR      ############
 
             # Define the optimizer
@@ -166,20 +180,6 @@ def learning(data, data_info, just_restore=False):
             else:
                 print("Initializing variables ...\n")
                 sess.run(tf.global_variables_initializer())
-
-            # Create a saver
-            saver = tf.train.Saver(write_version=tf.train.SaverDef.V2)
-            chkpt_file = abspath(join(args.chkpt_dir, 'chkpt-final'))
-
-            # restore model, if needed
-            if args.load_model_from_checkpoint:
-                print("Restoring the model from from the file " + str(chkpt_file) + '.')
-                saver.restore(sess, chkpt_file)
-                print("Model restored.")
-
-            if just_restore:
-                coord.request_stop()
-                return nn
 
             # A few initialization for the early stopping
             delta = args.delta_for_early_stopping  # error tolerance for early stopping
