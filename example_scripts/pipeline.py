@@ -99,7 +99,7 @@ def train_ae(script_loc, dataset_dir, model_dir, checkpoint_dir, summary_dir, di
 		os.makedirs(model_dir)
 		os.mkdir(checkpoint_dir)
 		os.mkdir(summary_dir)
-	subprocess.run(f'python {script_loc} --data_dir "{os.path.join(dataset_dir, "processed")}" --chkpt_dir "{checkpoint_dir}" --summary_dir "{summary_dir}" --layer2_width {dim} --training_epochs {epochs}', shell=True)
+	subprocess.run(f'python {script_loc} --data_dir "{os.path.join(dataset_dir, "processed")}" --data_info_dir {dataset_dir} --chkpt_dir "{checkpoint_dir}" --summary_dir "{summary_dir}" --layer2_width {dim} --training_epochs {epochs}', shell=True)
 
 def train_gg(script_loc, dataset_dir, model_file, epochs, ae_dim, hidden_dim, save_period):
 	subprocess.run(f'python {script_loc} {model_file} {epochs} {os.path.join(dataset_dir, "processed")} 26 True {ae_dim} -period {save_period} -dim {hidden_dim}', shell=True)
@@ -123,7 +123,7 @@ def predict(tmplt):
 
 	# python motion_repr_learning/ae/decode.py -input_file output\X_dev_trn_2022_v1_001_out_encoded.npy -output_file output\X_dev_trn_2022_v1_001_out_decoded.npy --layer1_width 128 --batch_size=8
 	data_dir = os.path.join(tmplt["dataset_dir"], 'processed')
-	subprocess.run(f'python {tmplt["decode_script"]} -input_file {f_out_encoded} -output_file {f_out_decoded} --data_dir {data_dir} --chkpt_dir {tmplt["ae_chkpt_dir"]} --summary_dir {tmplt["ae_smmry_dir"]} --layer2_width {tmplt["ae_dim"]} --batch_size=8 --smoothing_mode {tmplt["smoothing_mode"]} --savgol_window_length {tmplt["savgol_window_length"]} --savgol_poly_order {tmplt["savgol_poly_order"]}', shell=True)
+	subprocess.run(f'python {tmplt["decode_script"]} -input_file {f_out_encoded} -output_file {f_out_decoded} --data_dir {data_dir} --data_info_dir {tmplt["dataset_dir"]} --chkpt_dir {tmplt["ae_chkpt_dir"]} --summary_dir {tmplt["ae_smmry_dir"]} --layer2_width {tmplt["ae_dim"]} --batch_size=8 --smoothing_mode {tmplt["smoothing_mode"]} --savgol_window_length {tmplt["savgol_window_length"]} --savgol_poly_order {tmplt["savgol_poly_order"]}', shell=True)
 
 	# python features2bvh.py -feat ..\output\X_dev_trn_2022_v1_001_out_decoded.npy -bvh ..\output\X_dev_trn_2022_v1_001_out_decoded.bvh
 	os.chdir('data_processing')

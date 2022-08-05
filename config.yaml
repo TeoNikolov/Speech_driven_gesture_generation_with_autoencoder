@@ -1,6 +1,7 @@
 # See config.py for details about these parameters.
 
 data_dir:     "./dataset/processed/"
+data_info_dir: "./utils/"
 summary_dir:    "./results/summaries/"
 chkpt_dir:  "./results/checkpoints/"
 results_file: "./results/results.txt"

@@ -13,6 +13,7 @@ def construct_config_parser():
     # ---- Data directories ----
     
     parser.add('--data_dir',     help='The directory with the preprocessed dataset')
+    parser.add('--data_info_dir',help='The directory where metadata files relating to data processing are stored')
     parser.add('--summary_dir',  help='Directory for saving the summary data')
     parser.add('--chkpt_dir',    help='Directory for saving the model checkpoints')
     parser.add('--results_file', help='File for saving the results of the experiments')

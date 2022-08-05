@@ -33,7 +33,8 @@ def create_nn(train_data, dev_data, max_val, mean_pose, just_inference=False):
     if just_inference:
         data = None
         # read data info from a file
-        with open('utils/data_info.pkl', 'rb') as inp:
+		
+        with open(os.path.join(args.data_info_dir,'data_info.pkl'), 'rb') as inp:
             data_info = pickle.load(inp)
     else:
         # Create DataSet object
@@ -51,7 +52,7 @@ def create_nn(train_data, dev_data, max_val, mean_pose, just_inference=False):
                                 data.test._sequences.shape, max_val, mean_pose)
 
         # save info into a file
-        with open('utils/data_info.pkl', 'wb') as outp:
+        with open(os.path.join(args.data_info_dir, 'data_info.pkl'), 'wb') as outp:
             pickle.dump(data_info, outp, pickle.HIGHEST_PROTOCOL)
 
     # Train the network
