@@ -54,8 +54,8 @@ if args.smoothing_mode == 1:
 
 	if args.savgol_poly_order < 1:
 		raise ValueError("The parameter '--savgol_poly_order' cannot be less than 1!") # no really, the universe will collapse if it's set to 0
-	if args.savgol_poly_order > 7:
-		raise ValueError("The parameter '--savgol_poly_order' should not be more than 7!") # technically it can be more than 7, but the result is already similar to non-smoothed motion, so a boundary is used to point the user to a suitable range
+	if args.savgol_poly_order > 11:
+		raise ValueError("The parameter '--savgol_poly_order' should not be more than 11!") # technically it can be more than 7, but the result is already similar to non-smoothed motion, so a boundary is used to point the user to a suitable range
 
 	# general validation
 	if args.savgol_window_length % 2 == 0:
